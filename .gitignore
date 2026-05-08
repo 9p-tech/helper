@@ -1,0 +1,18 @@
+# Python / Django
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+*.sqlite3
+backend/venv/
+backend/staticfiles/
+backend/media/
+*.log
+
+# Node / Vite
+snitch-clone/node_modules/
+snitch-clone/dist/
+
+# OS
+.DS_Store
+Thumbs.db
