@@ -9,3 +9,4 @@ twilio>=8.12
 pytesseract>=0.3
 imagehash>=4.3
 requests>=2.31
+google-genai>=1.0

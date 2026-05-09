@@ -1,26 +1,23 @@
-from django.conf import settings
+from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from twilio.twiml.messaging_response import MessagingResponse
-from .state_machine import handle_message
+from django.views.decorators.http import require_POST
+from .bot import process_incoming, send_whatsapp_message
 
 
 @csrf_exempt
-@api_view(['POST'])
-@permission_classes([AllowAny])
+@require_POST
 def incoming_webhook(request):
-    from_number = request.data.get('From', '')
-    body = request.data.get('Body', '')
-    media_url = request.data.get('MediaUrl0', '')
-    num_media = int(request.data.get('NumMedia', 0))
+    from_number = request.POST.get('From', '')
+    body = request.POST.get('Body', '')
+    num_media = int(request.POST.get('NumMedia', 0))
+    media_url = request.POST.get('MediaUrl0', '') if num_media > 0 else ''
 
     if not from_number:
-        return Response({'error': 'Missing From'}, status=400)
+        return HttpResponse('Missing From', status=400)
 
-    reply_text = handle_message(from_number, body, media_url if num_media > 0 else '')
+    reply_text = process_incoming(from_number, body, media_url)
 
-    twiml = MessagingResponse()
-    twiml.message(reply_text)
-    return Response(str(twiml), content_type='text/xml')
+    send_whatsapp_message(to=from_number, body=reply_text)
+
+    twiml = '<?xml version="1.0" encoding="UTF-8"?><Response></Response>'
+    return HttpResponse(twiml, content_type='text/xml')
